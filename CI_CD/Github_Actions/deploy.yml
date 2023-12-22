@@ -1,0 +1,27 @@
+name: Deploy
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  deploy_code_to_vps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh/
+          echo "${{ secrets.LIGHTSAIL_VM_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa ${{ secrets.LIGHTSAIL_VM_IP }} >> ~/.ssh/known_hosts
+          echo ~/.ssh/id_rsa.pub
+
+      - name: Deploy using Ansible
+        run: |
+          export ENVIRONMENT=${{vars.ENVIRONMENT}}
+          ansible-playbook -i ansible/hosts --private-key ~/.ssh/id_rsa -u optimus ansible/deploy.yaml
+        env:
+          ENVIRONMENT: production
