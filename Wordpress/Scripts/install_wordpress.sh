@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Variables
+DATABASE_NAME="wordpress"
+DATABASE_USER="wordpress-admin"
+DATABASE_PASSWORD="$%jP8@qR3zLx"
+DATABASE_HOST="10.0.0.11" # Private IP or Hostname of the MySQL server
+
 # Download updates
 yum update -y
 
@@ -27,11 +33,9 @@ chmod -R 755 /var/www/html
 
 # Create the WordPress Config file
 cp wp-config-sample.php wp-config.php
-sed -i 's/database_name_here/wordpress/' wp-config.php
-sed -i 's/username_here/wordpress-admin/' wp-config.php
-sed -i 's/password_here/$%jP8@qR3zLx/' wp-config.php
-
-DATABASE_HOST="10.255.181.11" # Private IP or Hostname
+sed -i "s/database_name_here/$DATABASE_NAME/" wp-config.php
+sed -i "s/username_here/$DATABASE_USER/" wp-config.php
+sed -i "s/password_here/$DATABASE_PASSWORD/" wp-config.php
 sed -i "s/define('DB_HOST', 'localhost');/define('DB_HOST', '$DATABASE_HOST');/" wp-config.php
 
 # Restart Apache
