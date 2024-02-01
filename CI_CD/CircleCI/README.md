@@ -60,3 +60,18 @@ workflows:
       - deploy
 
 ```
+
+
+## Deploying a multi-container application to ElasticBeanstalk
+
+### Steps
+
+1. Create AWS IAM account
+2. Assign ElasticBeanstalk permissions for the account
+3. Generate access key and secret key credentials
+	1. https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/AWSHowTo.iam.managed-policies.html
+4. Add AWS and DockerHub environment variables to CircleCI
+5. Push images to dockerhub
+6. Create EB Application and use Docker or ECS platform
+7. Create a `Dockerrun.aws.json` file. Add container information to it. See example `Dockerrun.aws.json` file included in the ElasticBeanstalk folder.
+  1. https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker_v2config.html#create_deploy_docker_v2config_dockerrun
