@@ -1,0 +1,236 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  VpcCidrBlock:
+    Type: String
+    Description: CIDR block for the VPC
+    Default: "10.0.3.64/26"
+  PublicSubnetCidrBlock:
+    Type: String
+    Description: CIDR block for the public subnet
+    Default: "10.0.3.64/27"
+  PrivateSubnetCidrBlock:
+    Type: String
+    Description: CIDR block for the private subnet
+    Default: "10.0.3.96/27"
+  DatabaseName:
+    Type: String
+    Description: Name of the database
+    Default: "wordpress"
+  DatabaseUser:
+    Type: String
+    Description: Name of the database user
+    Default: "wordpress-admin"
+  DatabasePassword:
+    Type: String
+    Description: Initial Temporary password for the database user
+    Default: "$%jP8@qR3zLx"
+
+Resources:
+  WordPressVPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: !Ref VpcCidrBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: "Name"
+          Value: "WordPressVPC 2"
+
+  PublicSubnet:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref WordPressVPC
+      CidrBlock: !Ref PublicSubnetCidrBlock
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      Tags:
+        - Key: "Name"
+          Value: "PublicSubnet"
+
+  PrivateSubnet:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref WordPressVPC
+      CidrBlock: !Ref PrivateSubnetCidrBlock
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      Tags:
+        - Key: "Name"
+          Value: "PrivateSubnet"
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value: "InternetGateway"
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref WordPressVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  NATGatewayEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: NATGatewayEIP
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NATGatewayEIP.AllocationId
+      SubnetId: !Ref PublicSubnet
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref WordPressVPC
+      Tags:
+        - Key: Name
+          Value: PrivateRouteTable
+
+  NatGatewayRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  PrivateSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet
+      RouteTableId: !Ref PrivateRouteTable
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref WordPressVPC
+      Tags:
+        - Key: Name
+          Value: RouteTable
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  SubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  AppServerInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Enable HTTP, HTTPS and SSH access via port 80, 443 and 22"
+      VpcId: !Ref WordPressVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  DatabaseServerInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Enable MySQL access via port 3306"
+      VpcId: !Ref WordPressVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !GetAtt AppServerInstanceSecurityGroup.GroupId
+
+  DatabaseServerInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      Tags:
+        - Key: Name
+          Value: DatabaseServerInstance
+      ImageId: ami-0fef2f5dd8d0917e8 # Amazon Linux 2023 AMI
+      InstanceType: t2.micro
+      KeyName: wordpress_key
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !Ref PrivateSubnet
+          GroupSet:
+            - !GetAtt DatabaseServerInstanceSecurityGroup.GroupId
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            yum update -y
+            yum install mariadb105-server -y
+            systemctl start mariadb
+            systemctl enable mariadb
+            mysql -u root -e "CREATE DATABASE ${database_name}; CREATE USER '${database_user}'@'%' IDENTIFIED BY '${database_password}'; GRANT ALL PRIVILEGES ON ${database_name}.* TO '${database_user}'@'%'; FLUSH PRIVILEGES;"
+          - database_name: !Ref DatabaseName
+            database_user: !Ref DatabaseUser
+            database_password: !Ref DatabasePassword
+
+  WordPressInstance:
+    Type: AWS::EC2::Instance
+    DependsOn: DatabaseServerInstance
+    Properties:
+      Tags:
+        - Key: Name
+          Value: WordpressInstance
+      ImageId: ami-0fef2f5dd8d0917e8 # Amazon Linux 2023 AMI
+      InstanceType: t2.micro
+      KeyName: wordpress_key
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !Ref PublicSubnet
+          GroupSet:
+            - !GetAtt AppServerInstanceSecurityGroup.GroupId
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            yum update -y
+            yum install -y httpd
+            systemctl start httpd
+            systemctl enable httpd
+            yum install -y php php-mysqlnd php-gd php-fpm php-mysqli php-json php-devel          
+            cd /var/www/html
+            curl -O https://wordpress.org/latest.tar.gz
+            tar -zxvf latest.tar.gz
+            mv wordpress/* .
+            rm -rf wordpress latest.tar.gz
+            chown -R apache:apache /var/www/html
+            chmod -R 755 /var/www/html
+            cp wp-config-sample.php wp-config.php
+
+            sed -i "s/database_name_here/${database_name}/" wp-config.php
+            sed -i "s/username_here/${database_user}/" wp-config.php
+            sed -i "s/password_here/${database_password}/" wp-config.php
+            sed -i "s/localhost/${database_host}/" wp-config.php
+            systemctl restart httpd
+
+          - database_host: !GetAtt DatabaseServerInstance.PrivateIp
+            database_name: !Ref DatabaseName
+            database_user: !Ref DatabaseUser
+            database_password: !Ref DatabasePassword
+
+Outputs:
+  PublicIPAddress:
+    Description: Public IP address of the Wordpress Instance
+    Value: !GetAtt WordPressInstance.PublicIp
