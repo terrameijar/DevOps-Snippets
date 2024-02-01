@@ -23,7 +23,7 @@ Parameters:
   DatabasePassword:
     Type: String
     Description: Initial Temporary password for the database user
-    Default: "$%jP8@qR3zLx"
+    NoEcho: true
 
 Resources:
   WordPressVPC:
