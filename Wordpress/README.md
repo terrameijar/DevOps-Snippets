@@ -31,9 +31,6 @@ For more detailed instructions and information, please refer to the [CloudFormat
 
 ## Folder Structure
 
-- `CloudFormation/`: Contains the CloudFormation template to create the entire infrastructure stack.
-- `Scripts/`: Contains the shell scripts for configuring the EC2 instances.
+- [`CloudFormation/`](CloudFormation/create_wordpress_environment.yaml): Contains the CloudFormation template to create the entire infrastructure stack.
+- [`Scripts/`](Scripts/): Contains the shell scripts for configuring the EC2 instances.
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).

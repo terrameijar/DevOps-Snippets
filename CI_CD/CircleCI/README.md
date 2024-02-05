@@ -73,5 +73,5 @@ workflows:
 4. Add AWS and DockerHub environment variables to CircleCI
 5. Push images to dockerhub
 6. Create EB Application and use Docker or ECS platform
-7. Create a `Dockerrun.aws.json` file. Add container information to it. See example `Dockerrun.aws.json` file included in the ElasticBeanstalk folder.
+7. Create a `Dockerrun.aws.json` file. Add container information to it. See example [`Dockerrun.aws.json`](./Dockerrun.aws.json) file included in the folder.
   1. https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker_v2config.html#create_deploy_docker_v2config_dockerrun

@@ -34,7 +34,7 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: "Name"
-          Value: "WordPressVPC 2"
+          Value: "WordPressVPC"
 
   PublicSubnet:
     Type: "AWS::EC2::Subnet"
@@ -167,7 +167,7 @@ Resources:
       InstanceType: t2.micro
       KeyName: wordpress_key
       NetworkInterfaces:
-        - AssociatePublicIpAddress: true
+        - AssociatePublicIpAddress: false
           DeviceIndex: 0
           SubnetId: !Ref PrivateSubnet
           GroupSet:
