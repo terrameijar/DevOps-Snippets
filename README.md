@@ -45,4 +45,4 @@ This project provides a CloudFormation template and shell scripts to create a tw
 
 ### Project 6: [AWS Auto Scaling Architecture using EC2](LoadBalancing/README.md)
 ### Overview
-A project that demonstrates using infrastructure as code tool(CloudFormation) to create an auto-scaling EC2 infrastructure with Security Groups, an Application Load Balancer, and EC2 instances.
+A project that demonstrates using an infrastructure as code tool(CloudFormation) to create an auto-scaling EC2 infrastructure with Security Groups, an Application Load Balancer, and EC2 instances.
