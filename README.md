@@ -4,15 +4,18 @@ Welcome to my DevOps Portfolio! This repository serves as a central hub for docu
 # Table of Contents
 
 ## CI/CD
-1. [Deploying a Node.js app to AWS Elastic Beanstalk](#project-1-deploying-a-nodejs-app-to-aws-elastic-beanstalk)
-1. [Deploying a Multi-Container Application to ElasticBeanstalk](#project-2-deploying-a-multi-container-application-to-elasticbeanstalk)
-1. [Deploying an Application to AWS Lightsail](#project-3-deploying-an-application-to-aws-lightsail)
+1. [CircleCI -- Deploying a Node.js app to AWS Elastic Beanstalk](#project-1-deploying-a-nodejs-app-to-aws-elastic-beanstalk)
+1. [CircleCI -- Deploying a Multi-Container Application to ElasticBeanstalk](#project-2-deploying-a-multi-container-application-to-elasticbeanstalk)
+1. [GitHub Actions -- Deploying an Application to AWS Lightsail using GitHub Actions](#project-3-deploying-an-application-to-aws-lightsail)
 
 ## Storage
 1. [Streaming Replication in PostgreSQL](#project-4-postgresql-replication)
 
 ## Infrastructure as Code
 1. [Two-Tier WordPress Architecture on AWS using CloudFormation](#project-5-two-tier-wordpress-architecture-on-aws)
+
+## Auto Scaling
+1. [AWS Auto Scaling Architecture using EC2](#project-6-aws-auto-scaling-architecture-using-ec2)
 
 
 
@@ -36,3 +39,7 @@ The PostgreSQL Replication project demonstrates the setup of a primary PostgreSQ
 ### Project 5: [Two-Tier WordPress Architecture on AWS](Wordpress/README.md)
 ### Overview
 This project provides a CloudFormation template and shell scripts to create a two-tier WordPress architecture on AWS. For detailed instructions, follow the deployment guide.
+
+### Project 6: [AWS Auto Scaling Architecture using EC2](LoadBalancing/README.md)
+### Overview
+A project that demonstrates using infrastructure as code tool(CloudFormation) to create an auto-scaling EC2 infrastructure with Security Groups, an Application Load Balancer, and EC2 instances.
