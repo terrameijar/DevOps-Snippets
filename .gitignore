@@ -6,3 +6,5 @@ env/
 
 # Ignore cache folder
 __pycache__/
+.pem
+.env
