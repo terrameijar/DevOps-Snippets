@@ -18,6 +18,9 @@ Welcome to my DevOps Portfolio! This repository serves as a central hub for docu
 1. [AWS Auto Scaling Architecture using EC2](#project-6-aws-auto-scaling-architecture-using-ec2)
 
 
+## Projects
+
+Here is a summary of some projects in this repo.
 
 
 ### Project 1: Deploying a Node.js app to AWS Elastic Beanstalk
