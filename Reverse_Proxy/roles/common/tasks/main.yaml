@@ -1,0 +1,31 @@
+---
+- name: Install Prerequisistes
+  ansible.builtin.apt:
+    name: aptitude
+    update_cache: yes
+    state: latest
+    force_apt_get: yes
+
+- name: Update apt package cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Upgrade apt to the latest packages
+  ansible.builtin.apt:
+    upgrade: safe
+
+- name: Install UFW
+  ansible.builtin.apt:
+    name: ufw
+    state: latest
+
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: latest
+
+- name: Install Git
+  ansible.builtin.apt:
+    name: git
+    state: latest

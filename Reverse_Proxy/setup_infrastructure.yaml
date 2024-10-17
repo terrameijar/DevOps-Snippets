@@ -1,0 +1,11 @@
+---
+- name: Setup Server
+  hosts: cybertron
+  become: true
+  vars:
+    ansible_user: optimus
+    server_name: cybertron
+  roles:
+    - role: common
+    - role: webserver
+    - role: docker
