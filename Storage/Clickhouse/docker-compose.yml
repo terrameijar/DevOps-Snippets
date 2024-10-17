@@ -1,0 +1,19 @@
+services:
+  clickhouse:
+    container_name: clickhouse-server-container
+    image: clickhouse/clickhouse-server:latest
+    ports:
+      - 8123:8123
+      - 9000:9000
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse/
+      - clickhouse-logs:/var/log/clickhouse-server/
+      - ./config:/etc/clickhouse-server/users.d/
+    environment:
+      - CLICKHOUSE_USER=optimus
+      - CLICKHOUSE_PASSWORD=strong_password
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+
+volumes:
+  clickhouse-data:
+  clickhouse-logs:
