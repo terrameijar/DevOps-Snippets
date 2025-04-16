@@ -1,0 +1,39 @@
+name: Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build Frontend Assets
+        run: yarn build
+
+      - name: Archive dist Directory
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist/
+
+      - name: Copy build to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "dist/*"
+          target: ${{ vars.BUILD_DIR }}
