@@ -1,8 +1,21 @@
 # WordPress Backup Script
 
-A Wordpress backup script that backs up the WordPress database and and public html directory to a local directory and an AWS S3 bucket on a schedule. Sends notifications via email or AWS SNS if the backup fails.
+A Wordpress backup script that backs up a WordPress database and public html directory to a local directory as well as to an AWS S3 bucket on a schedule. Work in progress. I plan to add the ability to send notifications via email or AWS SNS if the backup fails.
 
-## Environment Variables
+## Requirements
+
+1. AWS [credentials configured](https://docs.aws.amazon.com/cli/v1/userguide/cli-chap-configure.html#configure-precedence) on the server
+1. MySQL credentials saved to a [MYSQL option file](https://dev.mysql.com/doc/refman/8.4/en/option-files.html)
+1. An existing Existing AWS S3 bucket you have write-access to.
+
+## Steps
+
+1. Configure AWS and MySQL credentials
+1. Create an AWS S3 bucket
+1. Modify the `Resource` value in [this IAM policy](./iam_policy.json). Replace the value with the name of your S3 bucket. [Add the IAM policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html) to your AWS user account to allow it to upload files to the S3 bucket.
+1. Populate the following variables in the `wp_backup.sh` script:
+
+### Environment Variables
 
 Populate the following variables to configure backup options:
 
@@ -26,3 +39,13 @@ S3_BUCKET="" # e.g S3 Bucket name e.g `wordpress-backups`
 - `WP_DATA_DIR` - Path to the WordPress public html directory
 - `WP_ROOT_DIR_BACKUP_FILE` - Local path where the WordPress Public Html backup should be saved
 - `S3_BUCKET` - AWS S3 bucket to save the backup to
+
+## Running the script
+
+To run the script:
+
+```shell
+# Make the script executable
+chmod +x wp_backup.sh
+./wp_backup.sh
+```

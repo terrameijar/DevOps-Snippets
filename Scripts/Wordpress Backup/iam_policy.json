@@ -9,14 +9,14 @@
                 "s3:PutObjectAcl"
             ],
             "Resource": [
-                "arn:aws:s3:::vuyisile.com-backups/*"
+                "arn:aws:s3:::your-bucket-name/*"
             ]
         },
         {
             "Sid": "AllowListBucket",
             "Effect": "Allow",
             "Action": "s3:ListBucket",
-            "Resource": "arn:aws:s3:::vuyisile.com-backups"
+            "Resource": "arn:aws:s3:::your-bucket-name"
         }
     ]
 }
