@@ -1,0 +1,37 @@
+---
+- name: Ensure destination directories exist
+  file:
+    path: "{{ item.dest }}"
+    state: directory
+    recurse: yes
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  loop: "{{ git_repos }}"
+
+- name: Clone or Update Repositories
+  ansible.builtin.git:
+    repo: "{{ item.repo }}"
+    dest: "{{ item.dest }}"
+    version: "{{ item.branch }}"
+    update: yes
+    force: yes
+    accept_newhostkey: true
+    ssh_opts: "-i {{ item.ssh_key }}"
+  loop: "{{ git_repos }}"
+
+- name: Ensure Backend Systemd Service Is Created
+  ansible.builtin.template:
+    src: backend-service.service.j2
+    dest: /etc/systemd/system/{{ github_backend_service_name }}
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload systemd
+
+- name: Start the Backend Service
+  ansible.builtin.systemd_service:
+    name: "{{ github_backend_service_name }}"
+    state: started
+    enabled: true
+# - name: Create frontend deployment script
