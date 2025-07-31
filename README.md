@@ -10,6 +10,11 @@ Welcome to my DevOps Portfolio! This repository serves as a central hub for docu
 1. [CircleCI -- Deploying a Multi-Container Application to ElasticBeanstalk](#project-2-deploying-a-multi-container-application-to-elasticbeanstalk)
 1. [GitHub Actions -- Deploying an Application to AWS Lightsail using GitHub Actions](#project-3-deploying-an-application-to-aws-lightsail)
 
+## IaC
+
+1. [Ansible Playbooks](./IaC/Ansible/README.md). Ansible playbooks and roles for automated server provisioning and configuration management.
+1. [Terraform Snippets](./IaC/Terraform/README.md).Terraform configurations, scripts, and examples for deploying and managing infrastructure across major cloud providers using Infrastructure as Code principles.
+
 ## Storage
 
 1. [Streaming Replication in PostgreSQL](#project-4-postgresql-replication)
