@@ -1,0 +1,192 @@
+#cloud-config
+
+# AWS EC2 Cloud-Init Configuration
+# Cloud-config equivalent of the user-data.sh bash script
+
+package_update: true
+package_upgrade: true
+
+packages:
+    - nginx
+
+# Run commands after packages are installed
+runcmd:
+    # Start and enable nginx service
+    - systemctl start nginx
+    - systemctl enable nginx
+
+    # Capture the launch time
+    - echo "$(date)" > /var/www/html/launch-time.txt
+
+    # Create the main index.html page
+    - |
+        LAUNCH_TIME=$(cat /var/www/html/launch-time.txt)
+        cat > /var/www/html/index.html << EOF
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Hello World - AWS Migration Lab</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    text-align: center;
+                    background-color: #f0f0f0;
+                    padding: 50px;
+                }
+                .container {
+                    background-color: white;
+                    padding: 30px;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    max-width: 600px;
+                    margin: 0 auto;
+                }
+                h1 {
+                    color: #333;
+                    margin-bottom: 20px;
+                }
+                .info {
+                    color: #666;
+                    margin-top: 20px;
+                }
+                .aws-logo {
+                    color: #ff9900;
+                    font-weight: bold;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Hello World from AWS EC2!</h1>
+                <p>This is a simple web server running on Amazon EC2 instance.</p>
+                <p class="aws-logo">AWS Migration Lab</p>
+                <div class="info">
+                    <p>Server: Ubuntu</p>
+                    <p>Web Server: Nginx</p>
+                    <p>Instance launched: ${LAUNCH_TIME}</p>
+                </div>
+                
+                <script>
+                    // Fetch instance launch time from AWS metadata
+                    fetch('http://169.254.169.254/latest/meta-data/instance-life-cycle')
+                        .then(response => response.text())
+                        .then(data => {
+                            // For launch time, we can use a different approach
+                            // Get the current time and subtract uptime to approximate launch time
+                            fetch('/proc/uptime')
+                                .catch(() => {
+                                    // Fallback: just show current date since we can't access /proc/uptime from browser
+                                    document.getElementById('launchTime').textContent = new Date().toLocaleString();
+                                });
+                        })
+                        .catch(error => {
+                            // Fallback to current time
+                            document.getElementById('launchTime').textContent = new Date().toLocaleString();
+                        });
+                </script>
+            </div>
+        </body>
+        </html>
+        EOF
+
+    # Set proper permissions for the index file
+    - chmod 644 /var/www/html/index.html
+
+    # Create a status page with AWS metadata (server-side generated)
+    - |
+        # Get metadata using IMDSv2 during cloud-init
+        TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+        INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+        INSTANCE_TYPE=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-type)
+        AZ=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/availability-zone)
+        PUBLIC_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-ipv4)
+        PRIVATE_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
+        REGION=${AZ%?}  # Remove last character to get region
+
+        cat > /var/www/html/status.html << EOF
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>AWS EC2 Status</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 40px;
+                    background-color: #f5f5f5;
+                }
+                .container {
+                    background-color: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+                .aws-orange {
+                    color: #ff9900;
+                }
+                .status-ok {
+                    color: #28a745;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1 class="aws-orange">AWS EC2 Status</h1>
+                <p class="status-ok"> Nginx is running successfully!</p>
+                <p><strong>Instance ID:</strong> ${INSTANCE_ID}</p>
+                <p><strong>Instance Type:</strong> ${INSTANCE_TYPE}</p>
+                <p><strong>Availability Zone:</strong> ${AZ}</p>
+                <p><strong>Region:</strong> ${REGION}</p>
+                <p><strong>Public IP:</strong> ${PUBLIC_IP}</p>
+                <p><strong>Private IP:</strong> ${PRIVATE_IP}</p>
+                <p><strong>Metadata Service:</strong> IMDSv2 (Token-based)</p>
+                <p><strong>Status Generated:</strong> $(date)</p>
+                
+                <hr>
+                <h3>Migration Lab Notes</h3>
+                <p>This page was generated server-side during instance launch using AWS Instance Metadata Service v2.</p>
+                <p>The metadata is embedded in the HTML and will migrate with the VM image.</p>
+            </div>
+        </body>
+        </html>
+        EOF
+
+    # Set permissions for status page
+    - chmod 644 /var/www/html/status.html
+
+    # Restart nginx to ensure everything is loaded
+    - systemctl restart nginx
+
+    # Log the completion
+    - echo "Cloud-init configuration completed successfully at $(date)" >> /var/log/cloud-init-custom.log
+
+# Write additional files
+write_files:
+    - path: /etc/nginx/sites-available/migration-lab
+      content: |
+          server {
+              listen 80 default_server;
+              listen [::]:80 default_server;
+              
+              root /var/www/html;
+              index index.html index.htm index.nginx-debian.html;
+              
+              server_name _;
+              
+              location / {
+                  try_files $uri $uri/ =404;
+              }
+              
+              # Add a custom header to identify this as the source server
+              add_header X-Migration-Lab "AWS-EC2" always;
+          }
+      permissions: "0644"
+
+# Final message
+final_message: |
+    Cloud-init configuration complete!
+
+    The web server should now be available at:
+    - Main page: http://[EC2_PUBLIC_IP]/
+    - Status page: http://[EC2_PUBLIC_IP]/status.html
+
+    Migration lab setup complete on AWS EC2.
