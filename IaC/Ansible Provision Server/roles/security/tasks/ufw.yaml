@@ -1,0 +1,22 @@
+---
+- name: Configure UFW to Allow SSH Connections
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: Configure UFW to Allow HTTP Connections
+  community.general.ufw:
+    rule: allow
+    port: 80
+    proto: tcp
+
+- name: Configure UFW to Allow HTTPS Connections
+  community.general.ufw:
+    rule: allow
+    port: 443
+    proto: tcp
+
+- name: Enable UFW Firewall and Set Default Policy to Deny
+  community.general.ufw:
+    state: enabled
+    default: deny

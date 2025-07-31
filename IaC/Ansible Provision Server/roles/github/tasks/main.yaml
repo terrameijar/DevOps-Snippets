@@ -19,6 +19,15 @@
     ssh_opts: "-i {{ item.ssh_key }}"
   loop: "{{ git_repos }}"
 
+- name: Ensure ansible_user has ownership of cloned files
+  ansible.builtin.file:
+    path: "{{ item.dest }}"
+    state: directory
+    recurse: yes
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  loop: "{{ git_repos }}"
+
 - name: Ensure Backend Systemd Service Is Created
   ansible.builtin.template:
     src: backend-service.service.j2

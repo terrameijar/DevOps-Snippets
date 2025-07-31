@@ -1,0 +1,23 @@
+---
+- name: Include OS-specific variables
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Update packages
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+    name: "*"
+    state: latest
+
+# Fail2Ban
+- include_tasks: fail2ban.yaml
+  when: security_fail2ban_enabled | bool
+
+# SSH
+- include_tasks: ssh.yaml
+
+# UFW
+- include_tasks: ufw.yaml
+
+# Sudo
+- include_tasks: sudoers.yaml

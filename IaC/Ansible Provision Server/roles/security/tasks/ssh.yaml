@@ -1,0 +1,33 @@
+---
+- name: Ensure SSH daemon is running
+  ansible.builtin.service:
+    name: "{{ security_sshd_name }}"
+    state: started
+
+- name: Disallow Root SSH access
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    state: present
+    regexp: "^#?PermitRootLogin"
+    line: "PermitRootLogin no"
+  notify:
+    - restart ssh
+
+- name: Enable PubKey Authentication
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    state: present
+    regexp: "^#?PubkeyAuthentication"
+    line: "PubkeyAuthentication yes"
+  notify:
+    - restart ssh
+
+- name: Disable password authentication
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    state: present
+    regexp: "^#?PasswordAuthentication"
+    line: 'PasswordAuthentication no'
+    backup: yes
+  notify:
+    - restart ssh

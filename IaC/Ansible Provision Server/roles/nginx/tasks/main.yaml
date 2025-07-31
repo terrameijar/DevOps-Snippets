@@ -1,0 +1,28 @@
+---
+- name: Install nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: latest
+    update_cache: yes
+
+- name: Ensure nginx is running
+  ansible.builtin.systemd_service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Copy server configuration into place
+  ansible.builtin.template:
+    src: "{{ nginx_config_template }}"
+    dest: "{{ nginx_site_available_path }}/{{ nginx_server_name }}.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload nginx
+
+- name: Ensure server configuration is enabled
+  ansible.builtin.file:
+    src: "{{ nginx_site_available_path }}/{{ nginx_server_name }}.conf"
+    dest: "{{ nginx_site_enabled_path }}/{{ nginx_server_name }}.conf"
+    state: link

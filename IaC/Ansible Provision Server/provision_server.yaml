@@ -1,0 +1,11 @@
+---
+- name: Initial Server Setup
+  hosts: all
+  become: true
+
+  roles:
+    - role: common
+    - role: security
+    - role: nginx
+    - role: nodejs
+    - role: github

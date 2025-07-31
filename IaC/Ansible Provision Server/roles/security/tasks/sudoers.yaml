@@ -1,0 +1,14 @@
+---
+- name: Allow users in sudo group to restart a backend service without a password prompt
+  community.general.sudoers:
+    name: "{{ security_sudoers_file_name | default('backend-service') }}"
+    user: "%sudo"
+    commands:
+      - /usr/bin/systemctl restart {{ security_backend_service_name }}
+      - /usr/bin/systemctl reload {{ security_backend_service_name }}
+      - /usr/bin/systemctl stop {{ security_backend_service_name }}
+      - /usr/bin/systemctl start {{ security_backend_service_name }}
+      - /usr/bin/systemctl status {{ security_backend_service_name }}
+    nopassword: true
+
+

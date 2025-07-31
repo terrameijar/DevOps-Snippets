@@ -49,3 +49,9 @@ To run the script:
 chmod +x wp_backup.sh
 ./wp_backup.sh
 ```
+
+## To run the script on a schedule
+
+Add this to crontab:
+
+`0 2 \* \* 3 /usr/bin/sudo /home/vuyisile/scripts/wp_backup.sh`

@@ -17,3 +17,9 @@
       - containerd.io
       - docker-buildx-plugin
       - docker-compose-plugin
+
+- name: Add Ansible user to the docker group
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes

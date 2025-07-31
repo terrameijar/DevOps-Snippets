@@ -1,0 +1,36 @@
+---
+- name: Install fail2ban (Debian)
+  ansible.builtin.package:
+    name: fail2ban
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Copy custom fail2ban jail config file into place
+  ansible.builtin.template:
+    src: "{{ security_fail2ban_custom_configuration_template }}"
+    dest: /etc/fail2ban/jail.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload fail2ban
+
+- name: Copy custom fail2ban config file into place
+  ansible.builtin.template:
+    src: fail2ban.local.j2
+    dest: /etc/fail2ban/fail2ban.local
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - ansible_os_family == 'Debian'
+    - ansible_distribution_major_version | int >=12
+  notify:
+    - reload fail2ban
+
+
+- name: Ensure fail2ban is running and enabled on boot
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true
