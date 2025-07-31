@@ -1,0 +1,58 @@
+
+
+server {
+    listen {{ nginx_listen_port }};
+    server_name {{ nginx_server_name }};
+
+    root {{ nginx_root }};
+
+    # Deny access to dot files (e.g., .git, .env, .htaccess)
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # Deny access to sensitive files
+    location ~* /(wp-config\.php|composer\.(json|lock)|package\.json|yarn\.lock|\.env|\.htpasswd) {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # Block access to common scanning bots
+    if ($http_user_agent ~* (nikto|zgrab|masscan|sqlmap|nmap|fimap|dirbuster|wpscan|acunetix|netsparker)) {
+        return 403; # Forbidden
+    }
+
+    # Block access to backup and source files
+    location ~* \.(bak|old|orig|save|swp|swo|log|sql)$ {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # Block access to private directories
+    location ~* /(private|config|backup|logs|temp|tmp)/ {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    location / {
+    try_files $uri /index.html;
+    }
+
+    location = /dist/output.css {
+        rewrite ^dist/output.css$ /output.css break;
+    }
+
+    # Proxy API requests to backend
+    location /api {
+        proxy_pass {{ nginx_api_backend }};
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+    }
+
+}

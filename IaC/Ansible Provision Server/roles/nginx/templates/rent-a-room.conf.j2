@@ -1,0 +1,23 @@
+server {
+    listen 80;
+    server_name spotonrent.com;
+
+    root /opt/rent-a-room-app/rent-a-room-client-side/dist;
+
+    location / {
+       try_files $uri /index.html;
+    }
+
+    location = /dist/output.css {
+        rewrite ^dist/output.css$ /output.css break;
+    }
+
+    # Proxy API requests to backend
+    location /api {
+        proxy_pass http://127.0.0.1:5001;
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+    }
+
+}

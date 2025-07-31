@@ -1,0 +1,16 @@
+nginx_listen_port: 80
+nginx_site_available_path: "/etc/nginx/sites-available"
+nginx_site_enabled_path: "/etc/nginx/sites-enabled"
+nginx_server_name: "localhost"
+nginx_root: "/var/www/html"
+nginx_api_backend: "http://127.0.0.1:15001"
+
+# Git
+git_branch: "main"
+
+# Environment
+app_environment: "production"
+
+# Security
+security_backend_service_name: rent-a-room.service
+security_sudoers_file_name: rent-a-room

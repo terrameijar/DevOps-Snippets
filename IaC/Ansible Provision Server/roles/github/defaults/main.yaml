@@ -1,0 +1,32 @@
+---
+# Project configuration
+project_name: "my-new-app"
+app_environment: "production"
+git_branch: "main"
+
+# Base paths
+app_base_path: "/opt/{{ app_environment }}/{{ app_environment }}-{{ project_name }}-app"
+github_backend_path: "{{ app_base_path }}/{{ app_environment }}-{{ project_name }}/server"
+github_frontend_path: "{{ app_base_path }}/{{ app_environment }}-{{ project_name }}-client-side"
+
+# Service configuration
+github_backend_service_name: "{{ app_environment }}-{{ project_name }}.service"
+service_description: "{{ app_environment|capitalize }} {{ project_name|title|replace('-', ' ') }} Backend Service"
+syslog_identifier: "{{ app_environment }}-{{ project_name }}-backend"
+
+# Repository configuration
+backend_repo_org: "MyOrg"
+backend_repo_name: "{{ project_name }}"
+frontend_repo_name: "{{ project_name }}-client-side"
+
+# List of repos to clone and their settings
+git_repos:
+  - repo: "git@github.com:{{ backend_repo_org }}/{{ backend_repo_name }}.git"
+    dest: "{{ app_base_path }}/{{ app_environment }}-{{ project_name }}"
+    branch: "{{ git_branch }}"
+    ssh_key: "/home/{{ ansible_user }}/.ssh/{{ project_name }}_deploy_key"
+
+  - repo: "git@github.com:{{ backend_repo_org }}/{{ frontend_repo_name }}.git"
+    dest: "{{ github_frontend_path }}"
+    branch: "{{ git_branch }}"
+    ssh_key: "/home/{{ ansible_user }}/.ssh/{{ frontend_repo_name }}_deploy_key"

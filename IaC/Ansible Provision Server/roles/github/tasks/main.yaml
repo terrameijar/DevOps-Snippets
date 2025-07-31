@@ -43,4 +43,3 @@
     name: "{{ github_backend_service_name }}"
     state: started
     enabled: true
-# - name: Create frontend deployment script

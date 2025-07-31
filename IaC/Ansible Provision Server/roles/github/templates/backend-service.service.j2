@@ -1,0 +1,24 @@
+[Unit]
+Description={{ service_description }}
+After=network.target
+
+[Service]
+WorkingDirectory="{{ github_backend_path }}"
+
+ExecStart=/usr/bin/yarn run start
+
+# Auto-restart on crash
+Restart=always
+RestartSec=5
+
+
+
+User={{ ansible_user }}
+Group={{ ansible_user }}
+
+
+# Specifies the identifier used in syslog messages for this service.
+SyslogIdentifier="{{ syslog_identifier }}"
+[Install]
+# Ensures the service is started during the boot process under the multi-user target
+WantedBy=multi-user.target

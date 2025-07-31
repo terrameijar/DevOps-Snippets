@@ -1,0 +1,65 @@
+---
+- name: Checkout Git repositories
+  hosts: all
+  vars:
+    # Project configuration
+    project_name: "rent-a-room" # Change to your project name
+    app_environment: "production" # Change to "staging" for staging environment
+    git_branch: "main" # Change to "staging" for staging branch
+
+    # Base paths
+    app_base_path: "/opt/{{ project_name }}-app"
+    backend_dest_path: "{{ app_base_path }}/{{ project_name }}"
+    frontend_dest_path: "{{ app_base_path }}/{{ project_name }}-client-side"
+
+    # Repository configuration
+    backend_repo_org: "QuStackZW"
+    backend_repo_name: "{{ project_name }}"
+    frontend_repo_name: "{{ project_name }}-client-side"
+
+    # SSH key paths
+    backend_ssh_key: "~/.ssh/{{ project_name }}_deploy_key"
+    frontend_ssh_key: "~/.ssh/{{ project_name }}-client-side_deploy_key"
+
+    # Dynamic repository list
+    git_repos:
+      - repo: "git@github.com:{{ backend_repo_org }}/{{ backend_repo_name }}.git"
+        dest: "{{ backend_dest_path }}"
+        branch: "{{ git_branch }}"
+        ssh_key: "{{ backend_ssh_key }}"
+
+      - repo: "git@github.com:{{ backend_repo_org }}/{{ frontend_repo_name }}.git"
+        dest: "{{ frontend_dest_path }}"
+        branch: "{{ git_branch }}"
+        ssh_key: "{{ frontend_ssh_key }}"
+
+  tasks:
+    - name: Ensure destination directories exist
+      ansible.builtin.file:
+        path: "{{ item.dest }}"
+        state: directory
+        recurse: yes
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+      loop: "{{ git_repos }}"
+      become: true
+
+    - name: Clone or Update Repositories
+      ansible.builtin.git:
+        repo: "{{ item.repo }}"
+        dest: "{{ item.dest }}"
+        version: "{{ item.branch }}"
+        update: yes
+        force: yes
+        accept_newhostkey: true
+        ssh_opts: "-i {{ item.ssh_key }}"
+      loop: "{{ git_repos }}"
+
+    - name: Ensure cloned directories are owned by ansible_user
+      ansible.builtin.file:
+        path: "{{ item.dest }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        recurse: yes
+      loop: "{{ git_repos }}"
+      become: true
